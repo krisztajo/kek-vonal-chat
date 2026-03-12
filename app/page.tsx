@@ -5,12 +5,12 @@ import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 
 const MODELS = [
-  { id: "deepseek/deepseek-v3.2", name: "DeepSeek V3.2" },
+  { id: "deepseek/deepseek-v3.2", name: "DeepSeek V3.2", priceIn: 0.00000026, priceOut: 0.00000038 },
+  { id: "openai/gpt-4.1-mini", name: "GPT-4.1 Mini", priceIn: 0.0000004, priceOut: 0.0000016 },
+  { id: "google/gemini-3.1-flash-lite-preview", name: "Gemini 3.1 Flash Lite", priceIn: 0.00000025, priceOut: 0.0000015 },
+  { id: "qwen/qwen3.5-35b-a3b", name: "Qwen 3.5 35B", priceIn: 0.000000225, priceOut: 0.0000018 },
 ];
 
-// DeepSeek V3.2 pricing (USD per token) + rough HUF rate
-const PRICE_INPUT = 0.00000026;
-const PRICE_OUTPUT = 0.00000038;
 const HUF_PER_USD = 335;
 
 // ~4 chars per token rough estimate
@@ -70,13 +70,14 @@ export default function Chat() {
     });
 
   // Cost estimation
+  const activeModel = MODELS.find((m) => m.id === model) || MODELS[0];
   const inputTokens = messages
     .filter((m) => m.role === "user")
     .reduce((sum, m) => sum + estimateTokens(m.content), 0);
   const outputTokens = messages
     .filter((m) => m.role === "assistant")
     .reduce((sum, m) => sum + estimateTokens(m.content), 0);
-  const costUsd = inputTokens * PRICE_INPUT + outputTokens * PRICE_OUTPUT;
+  const costUsd = inputTokens * activeModel.priceIn + outputTokens * activeModel.priceOut;
   const costHuf = costUsd * HUF_PER_USD;
 
   function saveNewPrompt() {
